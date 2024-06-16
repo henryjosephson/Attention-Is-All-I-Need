@@ -172,8 +172,6 @@ unique_chars = set()
 # indexes unique characters.
 for file_type, path_tails in file_tree.items():
     for path_tail in path_tails:
-        print(IN_DIR + file_type + "/" + path_tail)
-
         print("\tprocessing " + path_tail)
 
         with open(
@@ -228,6 +226,7 @@ plot_var = list(
     )
 )
 
+print("==> plotting")
 fig, ax = plt.subplots()
 ax.bar(plot_var[0], height=plot_var[1], color="g")
 ax.set(
@@ -237,3 +236,5 @@ ax.set(
 )
 
 plt.savefig("./imgs/char_count.png")
+plt.close()
+print("==> done")
