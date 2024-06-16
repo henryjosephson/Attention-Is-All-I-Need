@@ -1,16 +1,16 @@
 # Attention Is All I Need
 This is my attempt to replicate the classic 2017 paper [*Attention Is All You Need*](https://arxiv.org/abs/1706.03762), which introduced the transformer architecture.
 
-Why? Because it's fun, because I want to understand how transformers actually work, and because 
+Why? Because it's fun, because I want to understand how transformers actually work, and because I can't do anything for my internship until after a meeting later this afternoon.
 
 I'm far from the first person to do this — see, e.g., previous replications by [Martin Dittgen](https://medium.com/@martin.p.dittgen/reproducing-the-attention-is-all-you-need-paper-from-scratch-d2fb40bb25d4), person2, and person3, all of which I cross-referenced when doing my own replication.
 
 ## 0. Prep/What am I doing?
 The original paper references base models and "big" models, with the base model training in around 12 hours and the big models training in around 3.5 days. (In both cases, they trained one machine with 8 NVIDIA P100 GPUs.)[^1]
 
-In the best-case scenario, I'll be able to use 4 A100s from UChicago's compute cluster, which should breeze through anything I throw at them. In the worst-case, I'll be working with the M2 chip on my mac (which isn't the worst, but is a far cry).
+I'm lucky enough to have access to UChicago's remote computing cluster, so I'll be able to use 4 A100s, which should breeze through anything I throw at them.
 
-I'll definitely replicate the base model, and whether I try to reproduce the big model will depend on whether I get compute time.
+I'll definitely replicate the base model, and I'll decide whether to do the big model after I'm done with base.
 
 ## 1. Training data
 ### Acquiring
@@ -43,10 +43,10 @@ After downloading all this text, I had to make sure is was all actually workable
 
 The WMT site that provided all the original data also provides a perl script for normalizing the punctuation, but I adapted [some python](https://github.com/Montinger/Transformer-Workbench/blob/main/transformer-from-scratch/0-Cleans-Data-and-Tokenize.py) that does the same thing from Martin Dittgen's replication of the paper.[^3]
 
-You can read the script I used for this part at [clean-and-count.py](./clean-and-count.py)...
-- <details open><summary>Or you can here to un-collapse the same script, broken down into chunks.</a></summary>
+You can read the script I used for this part at [0_clean_and_count.py](./0_clean_and_count.py)...
+- <details><summary>Or you can here to un-collapse the same script, broken down into chunks.</summary>
 
-    - <details><summary>This part initializes all the filepaths.</a></summary>
+    - <details><summary>This part initializes all the filepaths.</summary>
 
         ```python
         #!/opt/homebrew/Caskroom/miniconda/base/envs/attention/bin/python
@@ -96,8 +96,8 @@ You can read the script I used for this part at [clean-and-count.py](./clean-and
         ```
     </details>
 
-    - <details><summary>This part contains dictionaries of stuff to replace and what to replace it with.</a></summary>
-
+    - <details><summary>This part contains dictionaries of stuff to replace and what to replace it with.</summary>
+    
         ```python
         remap_dict = {
                 '„ ' : '"', # fix non-aligned beginnings
@@ -195,7 +195,7 @@ You can read the script I used for this part at [clean-and-count.py](./clean-and
         ```
     </details>
 
-    - <details><summary>This part actually cleans the files</a></summary>
+    - <details><summary>This part actually cleans the files.</summary>
 
         ```py
         print("==> cleaning files.")
@@ -235,7 +235,7 @@ You can read the script I used for this part at [clean-and-count.py](./clean-and
         ```
     </details>
 
-    - <details><summary>This part gets and graphs character counts.</a></summary>
+    - <details><summary>This part gets and graphs character counts.</summary>
 
         ```py
         print("==> getting char counts")
@@ -249,6 +249,26 @@ You can read the script I used for this part at [clean-and-count.py](./clean-and
                     full_text = f.read()
                     for char in unique_chars:
                         char_count_dict[char] += full_text.count(char)
+
+        plot_var = [x for x in zip(*sorted(
+            list(char_count_dict.items()),
+            key=lambda x: x[1],
+            reverse=True,
+        )[:20])]
+
+        fig,ax = plt.subplots()
+        ax.bar(
+            plot_var[0],
+            height = plot_var[1],
+            color='g'
+        )
+        ax.set(
+            title='Character Counts',
+            xlabel='Character',
+            ylabel='Count',
+        )
+
+        plt.savefig('./imgs/char_count.png')
         ```
     </details>
 
@@ -265,7 +285,7 @@ The most frequently-appearing character is the space. It doesn't quite match the
 Of course, the cold, hard machine gods don't actually speak English. They don't speak German, either — they speak number. So let's convert our natural language data into 
 
 <details>
-<summary>Click here to expand the code I used</a></summary>
+<summary>Click here to expand the code I used</summary>
 
 ```ruby
 def some_code
