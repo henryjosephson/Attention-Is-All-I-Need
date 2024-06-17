@@ -2,7 +2,7 @@
 
 import re
 import os
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt # type: ignore
 
 print("==> walking files.")
 
